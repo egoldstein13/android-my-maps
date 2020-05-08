@@ -44,7 +44,7 @@ class DisplayMapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        Log.i(TAG, "user map torender: ${userMap.title}")
+        Log.i(TAG, "user map to render: ${userMap.title}")
 
         val boundsBuilder = LatLngBounds.builder()
         for (place in userMap.places) {

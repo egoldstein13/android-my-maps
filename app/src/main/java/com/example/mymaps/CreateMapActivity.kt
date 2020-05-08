@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.example.mymaps.models.Place
 import com.example.mymaps.models.UserMap
@@ -24,6 +26,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 private const val TAG = "CreateMapActivity"
 
@@ -55,6 +59,7 @@ class CreateMapActivity : AppCompatActivity(), OnMapReadyCallback {
         return super.onCreateOptionsMenu(menu)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.miSave) {
             Log.i(TAG, "Tapped on save!")
@@ -63,7 +68,8 @@ class CreateMapActivity : AppCompatActivity(), OnMapReadyCallback {
                 return true
             }
             val places = markers.map { marker -> Place(marker.title, marker.snippet, marker.position.latitude, marker.position.longitude) }
-            val userMap = UserMap(intent.getStringExtra(EXTRA_MAP_TITLE), places)
+            val userMap = UserMap(intent.getStringExtra(EXTRA_MAP_TITLE),
+                LocalDateTime.now(), places)
             val data = Intent()
             data.putExtra(
                 EXTRA_USER_MAP, userMap)

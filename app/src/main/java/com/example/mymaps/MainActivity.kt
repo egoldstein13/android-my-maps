@@ -4,19 +4,25 @@ import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.EditText
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.example.mymaps.models.Place
 import com.example.mymaps.models.UserMap
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.*
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 
 const val EXTRA_USER_MAP = "EXTRA_USER_MAP"
 const val EXTRA_MAP_TITLE = "EXTRA_MAP_TITLE"
@@ -26,16 +32,22 @@ private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var  userMaps: MutableList<UserMap>
+    private lateinit var userMaps: MutableList<UserMap>
     private lateinit var mapAdapter: MapsAdapter
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        userMaps = deserializeUserMaps(this).toMutableList()
+        //userMaps = deserializeUserMaps(this).toMutableList()
+        userMaps = generateSampleData().toMutableList()
+        userMaps.sortWith(compareByDescending{it.date});
+        val itemDecoration: ItemDecoration =
+            DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
+        rvMaps.addItemDecoration(itemDecoration)
         rvMaps.layoutManager = LinearLayoutManager(this)
-        mapAdapter = MapsAdapter(this,userMaps, object : MapsAdapter.OnClickListener {
+        mapAdapter = MapsAdapter(this, userMaps, object : MapsAdapter.OnClickListener {
             override fun onItemClick(position: Int) {
                 Log.i(TAG, "onItemClick $position")
                 val intent = Intent(this@MainActivity, DisplayMapActivity::class.java)
@@ -45,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
         rvMaps.adapter = mapAdapter
+
 
         fabCreateMap.setOnClickListener {
             Log.i(TAG, "Tap on FAB")
@@ -56,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         val mapFormView = LayoutInflater.from(this).inflate(R.layout.dialog_create_map, null)
         val dialog =
             android.app.AlertDialog.Builder(this)
-                .setTitle("Map title")
+                .setTitle("Map Title")
                 .setView(mapFormView)
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("OK", null)
@@ -82,7 +95,10 @@ class MainActivity : AppCompatActivity() {
             val userMap = data?.getSerializableExtra(EXTRA_USER_MAP) as UserMap
             Log.i(TAG, "onActivityResult with new map title ${userMap.title}")
             userMaps.add(userMap)
-            mapAdapter.notifyItemInserted(userMaps.size - 1)
+
+            userMaps.sortWith(compareByDescending{it.date});
+            //Log.i(TAG,"$userMaps")
+            mapAdapter.notifyItemInserted(userMaps.indexOf(userMap))
             serializeUserMaps(this, userMaps)
         }
         super.onActivityResult(requestCode, resultCode, data)
@@ -108,10 +124,13 @@ class MainActivity : AppCompatActivity() {
         return File(context.filesDir, FILENAME)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun generateSampleData(): List<UserMap> {
+        val dateList = listOf("07/18/2019 16:20", "04/12/2020 01:11", "03/15/2020 18:15", "01/26/2020 12:59", "10/16/2019 03:12")
         return listOf(
             UserMap(
                 "Memories from University",
+                LocalDateTime.parse(dateList[0], DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm")),
                 listOf(
                     Place("Branner Hall", "Best dorm at Stanford", 37.426, -122.163),
                     Place("Gates CS building", "Many long nights in this basement", 37.430, -122.173),
@@ -119,12 +138,14 @@ class MainActivity : AppCompatActivity() {
                 )
             ),
             UserMap("January vacation planning!",
+                LocalDateTime.parse(dateList[1], DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm")),
                 listOf(
                     Place("Tokyo", "Overnight layover", 35.67, 139.65),
                     Place("Ranchi", "Family visit + wedding!", 23.34, 85.31),
                     Place("Singapore", "Inspired by \"Crazy Rich Asians\"", 1.35, 103.82)
                 )),
             UserMap("Singapore travel itinerary",
+                LocalDateTime.parse(dateList[2], DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm")),
                 listOf(
                     Place("Gardens by the Bay", "Amazing urban nature park", 1.282, 103.864),
                     Place("Jurong Bird Park", "Family-friendly park with many varieties of birds", 1.319, 103.706),
@@ -133,6 +154,7 @@ class MainActivity : AppCompatActivity() {
                 )
             ),
             UserMap("My favorite places in the Midwest",
+                LocalDateTime.parse(dateList[3], DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm")),
                 listOf(
                     Place("Chicago", "Urban center of the midwest, the \"Windy City\"", 41.878, -87.630),
                     Place("Rochester, Michigan", "The best of Detroit suburbia", 42.681, -83.134),
@@ -142,6 +164,7 @@ class MainActivity : AppCompatActivity() {
                 )
             ),
             UserMap("Restaurants to try",
+                LocalDateTime.parse(dateList[4], DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm")),
                 listOf(
                     Place("Champ's Diner", "Retro diner in Brooklyn", 40.709, -73.941),
                     Place("Althea", "Chicago upscale dining with an amazing view", 41.895, -87.625),
