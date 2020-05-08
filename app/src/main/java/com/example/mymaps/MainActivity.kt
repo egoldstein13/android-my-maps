@@ -40,8 +40,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //userMaps = deserializeUserMaps(this).toMutableList()
-        userMaps = generateSampleData().toMutableList()
+        userMaps = deserializeUserMaps(this).toMutableList()
+        //userMaps = generateSampleData().toMutableList()
         userMaps.sortWith(compareByDescending{it.date});
         val itemDecoration: ItemDecoration =
             DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
